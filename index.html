@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ТЗ · Лувр 49 м²</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #2C1F14;
+      background: #fff
+    }
+
+    /* ── STICKY TOP BLOCK (tabs + budget) ─────────────────────── */
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #E8DFD2
+    }
+
+    /* Budget bar */
+    .budget {
+      background: #2C1F14;
+      padding: 10px 14px 10px;
+      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    }
+
+    .brow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px
+    }
+
+    .btitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #F0E6D8;
+      letter-spacing: .02em
+    }
+
+    .btitle i {
+      color: #C08848;
+      font-style: italic
+    }
+
+    .bpct {
+      font-size: 11px;
+      color: #A08060;
+      letter-spacing: .04em
+    }
+
+    /* 2-column budget: прогноз | факт */
+    .bcols {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 0
+    }
+
+    .bcol {
+      padding: 0 10px
+    }
+
+    .bcol:first-child {
+      padding-left: 0
+    }
+
+    .bcol:last-child {
+      padding-right: 0
+    }
+
+    .bdiv {
+      background: rgba(255, 255, 255, .12);
+      align-self: stretch
+    }
+
+    .blabel {
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #806040;
+      margin-bottom: 3px
+    }
+
+    .bval {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1;
+      color: #E8D8C0
+    }
+
+    .bval.amber {
+      color: #C08848
+    }
+
+    .bval.green {
+      color: #6A9050
+    }
+
+    .bval.red {
+      color: #C05040
+    }
+
+    .bsub {
+      font-size: 10px;
+      color: #806040;
+      margin-top: 2px
+    }
+
+    /* Экономия/перерасход — новый блок */
+    .beco {
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 6px
+    }
+
+    .beco.show {
+      display: flex
+    }
+
+    .beco.save {
+      background: rgba(106, 144, 80, .15);
+      color: #8AB860
+    }
+
+    .beco.over {
+      background: rgba(192, 80, 64, .12);
+      color: #E07060
+    }
+
+    .beco-emoji {
+      font-size: 16px;
+      flex-shrink: 0
+    }
+
+    /* progress rail */
+    .bprog {
+      height: 2px;
+      background: rgba(255, 255, 255, .1);
+      border-radius: 1px;
+      margin-top: 8px;
+      overflow: hidden
+    }
+
+    .bprog-fill {
+      height: 2px;
+      background: #C08848;
+      border-radius: 1px;
+      transition: width .3s
+    }
+
+    .bprog-fill.over {
+      background: #C05040
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 12px;
+      gap: 0;
+      scrollbar-width: none;
+      background: #fff;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none
+    }
+
+    .tab {
+      flex-shrink: 0;
+      padding: 10px 14px 9px;
+      font-size: 12.5px;
+      color: #A08870;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tab.on {
+      color: #2C1F14;
+      border-bottom-color: #C08848;
+      font-weight: 500
+    }
+
+    .tab-done {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6A9050;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .tab.has-done .tab-done {
+      display: block
+    }
+
+    /* ── PAGE ─────────────────────────────────────────────────── */
+    .page {
+      padding: 0 14px 90px
+    }
+
+    /* Stage panel */
+    .stage {
+      display: none
+    }
+
+    .stage.on {
+      display: block
+    }
+
+    .stage-hero {
+      padding: 18px 0 14px;
+      border-bottom: 1px solid #EDE5D8;
+      margin-bottom: 16px;
+    }
+
+    .stage-num {
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #A08870;
+      margin-bottom: 3px
+    }
+
+    .stage-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: #2C1F14;
+      line-height: 1.1
+    }
+
+    .stage-meta {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      flex-wrap: wrap
+    }
+
+    .smeta {
+      font-size: 11px;
+      color: #A08870
+    }
+
+    .smeta b {
+      color: #2C1F14;
+      font-weight: 500
+    }
+
+    /* Description card */
+    .desc-card {
+      background: #FAF7F2;
+      border: 1px solid #EDE5D8;
+      border-left: 3px solid #C08848;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #4A3420;
+      line-height: 1.6;
+    }
+
+    .desc-card p+p {
+      margin-top: 6px
+    }
+
+    /* Requirements */
+    .req-block {
+      margin-bottom: 16px
+    }
+
+    .req-title {
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #A08870;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .req-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #EDE5D8
+    }
+
+    .req-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .req {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #EDE5D8;
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: 12.5px;
+      color: #2C1F14;
+      transition: all .2s;
+    }
+
+    .req.accepted {
+      background: #F6FAF4;
+      border-color: rgba(106, 144, 80, .25)
+    }
+
+    .req-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 0px
+    }
+
+    .req-txt {
+      flex: 1
+    }
+
+    .req-txt b {
+      color: #5C3D20;
+      font-weight: 500
+    }
+
+    .req-accept {
+      flex-shrink: 0;
+      font-size: 10px;
+      color: #A08870;
+      cursor: pointer;
+      padding: 3px 8px;
+      border: 1px solid #E0D8CC;
+      border-radius: 5px;
+      background: #FAF7F2;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+
+    .req-accept:hover {
+      background: #EDE5D8
+    }
+
+    .req-accept.done {
+      background: #6A9050;
+      color: #fff;
+      border-color: #6A9050
+    }
+
+    .req-accept.done::after {
+      content: ' ✓'
+    }
+
+    /* Items table */
+    .items-block {
+      margin-bottom: 16px
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid #EDE5D8;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      overflow: clip;
+    }
+
+    .item.done {
+      background: #F6FAF4;
+      border-color: rgba(106, 144, 80, .2)
+    }
+
+    .item.done .iname {
+      text-decoration: line-through;
+      text-decoration-color: #CCC5B8;
+      color: #A08870
+    }
+
+    .item-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 11px 6px
+    }
+
+    .cb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      border: 1.5px solid #CCC5B8;
+      background: #FAF7F2;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      margin-top: 1px;
+      transition: all .15s;
+    }
+
+    .cb:checked {
+      background: #6A9050;
+      border-color: #6A9050
+    }
+
+    .cb:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 7px;
+      height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .itext {
+      flex: 1;
+      min-width: 0
+    }
+
+    .iname {
+      font-size: 13px;
+      font-weight: 500;
+      color: #2C1F14;
+      line-height: 1.3
+    }
+
+    .isub {
+      font-size: 11px;
+      color: #A08870;
+      margin-top: 1px
+    }
+
+    .item-foot {
+      display: flex;
+      gap: 6px;
+      padding: 0 11px 10px;
+      align-items: center
+    }
+
+    .est-tag {
+      font-size: 11px;
+      color: #A08870;
+      background: #FAF7F2;
+      border: 1px solid #E0D8CC;
+      border-radius: 5px;
+      padding: 4px 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+
+    /* Цена введена → смета зачёркнута */
+    .est-tag.overridden {
+      text-decoration: line-through;
+      text-decoration-color: #CCC5B8;
+      color: #B0A090;
+      background: #F5F2EC;
+      border-style: dashed;
+    }
+
+    .price-row {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #FAF7F2;
+      border: 1.5px solid #E0D8CC;
+      border-radius: 7px;
+      overflow: clip;
+      transition: all .2s
+    }
+
+    .price-row:focus-within {
+      border-color: #C08848
+    }
+
+    /* Подсветка при автозаполнении */
+    .price-row.auto-filled {
+      border-color: #C08848;
+      background: #FFFBF5;
+      animation: flash .6s ease
+    }
+
+    @keyframes flash {
+
+      0%,
+      100% {
+        background: #FAF7F2
+      }
+
+      50% {
+        background: #FFF3E0
+      }
+    }
+
+    .price-row input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2C1F14;
+      padding: 6px 3px 6px 9px;
+      min-width: 0;
+      -webkit-appearance: none
+    }
+
+    .price-row input::placeholder {
+      color: #CCC5B8;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400
+    }
+
+    .price-row span {
+      font-size: 12px;
+      color: #A08870;
+      padding-right: 8px;
+      flex-shrink: 0
+    }
+
+    .lnk-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      background: #FAF7F2;
+      border: 1.5px solid #E0D8CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    .lnk-btn.has {
+      background: #C08848;
+      border-color: #C08848;
+      font-size: 12px
+    }
+
+    /* Section subtotal */
+    .subtotal {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 11px;
+      background: #FAF7F2;
+      border: 1px solid #EDE5D8;
+      border-radius: 8px;
+      margin-top: 4px;
+      margin-bottom: 4px
+    }
+
+    .st-label {
+      font-size: 11px;
+      color: #A08870
+    }
+
+    .st-vals {
+      display: flex;
+      gap: 12px;
+      align-items: baseline
+    }
+
+    .st-est {
+      font-size: 11px;
+      color: #A08870
+    }
+
+    .st-fact {
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Cormorant Garamond', serif;
+      color: #C08848
+    }
+
+    /* ── CUSTOM ITEM (пользовательская позиция) ───────────────── */
+    .custom-item {
+      background: #FFFBF5;
+      border: 1.5px dashed #D0C0A0;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      padding: 10px 11px;
+      animation: slideIn .3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .ci-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    .ci-name {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #E0D8CC;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      -webkit-appearance: none
+    }
+
+    .ci-name:focus {
+      border-color: #C08848
+    }
+
+    .ci-price {
+      width: 100px;
+      background: #fff;
+      border: 1px solid #E0D8CC;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 15px;
+      font-family: 'Cormorant Garamond', serif;
+      outline: none;
+      -webkit-appearance: none;
+      text-align: right
+    }
+
+    .ci-price:focus {
+      border-color: #C08848
+    }
+
+    .ci-del {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #FFF0ED;
+      border: 1px solid #F0C0B0;
+      color: #C05040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ci-stage-label {
+      font-size: 10px;
+      color: #C08848;
+      margin-bottom: 6px;
+      letter-spacing: .04em;
+      text-transform: uppercase
+    }
+
+    /* ── LINK SHEET ───────────────────────────────────────────── */
+    .sheet {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-end
+    }
+
+    .sheet.on {
+      pointer-events: auto
+    }
+
+    .sh-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 12, 4, .5);
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    .sheet.on .sh-bg {
+      opacity: 1
+    }
+
+    .sh-box {
+      position: relative;
+      width: 100%;
+      z-index: 1;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      padding: 16px 14px calc(env(safe-area-inset-bottom, 0px)+22px);
+      transform: translateY(100%);
+      transition: transform .28s cubic-bezier(.3, .7, 0, 1)
+    }
+
+    .sheet.on .sh-box {
+      transform: translateY(0)
+    }
+
+    .sh-bar {
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: #E0D8CC;
+      margin: 0 auto 14px
+    }
+
+    .sh-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2C1F14;
+      margin-bottom: 2px
+    }
+
+    .sh-sub {
+      font-size: 11px;
+      color: #A08870;
+      margin-bottom: 12px
+    }
+
+    .sh-inp {
+      width: 100%;
+      padding: 12px 13px;
+      background: #FAF7F2;
+      border: 1.5px solid #E0D8CC;
+      border-radius: 9px;
+      font-size: 14px;
+      color: #2C1F14;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      -webkit-appearance: none
+    }
+
+    .sh-inp:focus {
+      border-color: #C08848
+    }
+
+    .sh-inp::placeholder {
+      color: #A08870
+    }
+
+    .sh-btns {
+      display: flex;
+      gap: 7px;
+      margin-top: 9px
+    }
+
+    .sh-go {
+      flex: 1;
+      padding: 12px;
+      background: #2C1F14;
+      color: #F0E6D8;
+      border: none;
+      border-radius: 9px;
+      font-size: 14px;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    .sh-go:disabled {
+      background: #CCC5B8
+    }
+
+    .sh-ok {
+      padding: 12px 16px;
+      background: #FAF7F2;
+      color: #2C1F14;
+      border: 1.5px solid #E0D8CC;
+      border-radius: 9px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer
+    }
+
+    /* ── BOTTOM BAR ───────────────────────────────────────────── */
+    .bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      background: rgba(255, 255, 255, .97);
+      border-top: 1px solid #EDE5D8;
+      padding: 7px 12px calc(env(safe-area-inset-bottom, 0px)+7px);
+      display: flex;
+      gap: 7px
+    }
+
+    .bar button {
+      padding: 11px;
+      border-radius: 9px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border: none
+    }
+
+    .bar-g {
+      flex: 1;
+      background: #FAF7F2;
+      border: 1px solid #E0D8CC !important;
+      color: #8C7860
+    }
+
+    .bar-add {
+      flex: 1;
+      background: #F0E6D8;
+      border: 1px solid #D0C0A0 !important;
+      color: #5C3D20;
+      font-weight: 500
+    }
+
+    .bar-p {
+      flex: 2;
+      background: #2C1F14;
+      color: #F0E6D8;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .03em
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- STICKY TOP -->
+  <div class="top">
+    <!-- Budget bar -->
+    <div class="budget">
+      <div class="brow">
+        <div class="btitle">Лувр <i>49 м²</i> · ТЗ</div>
+        <div class="bpct" id="bPct">0% выполнено</div>
+      </div>
+      <div class="bcols">
+        <div class="bcol">
+          <div class="blabel">Прогноз (смета)</div>
+          <div class="bval amber" id="bEst">693 000 ₽</div>
+          <div class="bsub">базовый план</div>
+        </div>
+        <div class="bdiv"></div>
+        <div class="bcol">
+          <div class="blabel">Факт (внесено)</div>
+          <div class="bval green" id="bFact">0 ₽</div>
+          <div class="bsub" id="bDelta">остаток: 1 000 000 ₽</div>
+        </div>
+      </div>
+      <!-- НОВЫЙ БЛОК: Экономия / Перерасход относительно сметы -->
+      <div class="beco" id="bEco"><span class="beco-emoji" id="bEcoEmoji"></span><span id="bEcoText"></span></div>
+      <div class="bprog">
+        <div class="bprog-fill" id="bFill" style="width:0%"></div>
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <!-- PAGE -->
+  <div class="page" id="page"></div>
+
+  <!-- Link sheet -->
+  <div class="sheet" id="sheet">
+    <div class="sh-bg" onclick="closeSheet()"></div>
+    <div class="sh-box">
+      <div class="sh-bar"></div>
+      <div class="sh-name" id="shN">—</div>
+      <div class="sh-sub" id="shS"></div>
+      <input class="sh-inp" id="shI" type="url" placeholder="https://leroymerlin.ru/..." inputmode="url" oninput="shTyping()">
+      <div class="sh-btns">
+        <button class="sh-go" id="shGo" onclick="shOpen()" disabled>Открыть ↗</button>
+        <button class="sh-ok" onclick="closeSheet()">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bar">
+    <button class="bar-g" onclick="clearAll()">Сбросить</button>
+    <button class="bar-add" onclick="addCustomItem()">+ Добавить</button>
+    <button class="bar-p" onclick="window.print()">Экспорт PDF</button>
+  </div>
+
+  <script>
+    const SK='tz_lv2';
+let st={},shId=null,curTab=0;
+// customItems хранит пользовательские позиции: [{id,stageId,name,price}]
+let customItems=[];
+try{
+  const r=localStorage.getItem(SK);
+  if(r){
+    const parsed=JSON.parse(r);
+    st=parsed.st||{};
+    customItems=parsed.ci||[];
+  }
+}catch(e){}
+const sv=()=>{
+  try{localStorage.setItem(SK,JSON.stringify({st,ci:customItems}))}catch(e){}
+};
+const g=id=>st[id]||{p:'',l:'',d:false,ra:false};
+const set=(id,k,v)=>{if(!st[id])st[id]={};st[id][k]=v;sv()};
+const fm=n=>n?n.toLocaleString('ru-RU')+' ₽':'—';
+const px=v=>{const n=parseFloat((v||'').replace(/[^\d.]/g,''));return isNaN(n)?0:Math.round(n)};
+
+/* ═══════════════════════════════════════════════════════════
+   ДАННЫЕ: этапы ТЗ
+   ═══════════════════════════════════════════════════════════ */
+const STAGES = [
+  {
+    id:'prep', num:'01', icon:'📐', title:'Подготовка и демонтаж',
+    duration:'1–3 дня', budget_est:0,
+    desc:`Первый этап — осмотр квартиры, замеры, фиксация состояния предчистовой отделки. Определяем фронт работ, заказываем замерщиков кухни и шкафа-купе. Составляем и утверждаем очерёдность бригад.`,
+    reqs:[
+      {icon:'📏',text:'Замеры всех комнат с точностью до 1 см. Фото каждой стены до начала работ.'},
+      {icon:'💡',text:'Проверить расположение электрощитка, точек вывода под розетки и свет. Сверить с планом.'},
+      {icon:'🚿',text:'Проверить точки вывода сантехники: соответствие плану, высоты, диаметры труб.'},
+      {icon:'📋',text:'Заказать замерщика кухни и шкафа-купе. Бесплатно у большинства производителей.'},
+      {icon:'⚠️',text:'Зафиксировать все трещины, неровности, проблемные места — фото + видео для споров с бригадой.'},
+    ],
+    items:[]
+  },
+  {
+    id:'chern', num:'02', icon:'🧱', title:'Черновые работы',
+    duration:'2–3 недели', budget_est:153000,
+    desc:`Основа всего ремонта. От качества черновых работ зависит срок службы финишной отделки. Приоритет — идеальные углы, ровные стены и прочная стяжка. Работы сдаются поэтапно с проверкой перед следующим этапом.`,
+    reqs:[
+      {icon:'📐',text:'Отклонение стен от вертикали — не более 2 мм/м. Проверка правилом 2 м.'},
+      {icon:'💧',text:'Гидроизоляция с/у: 2 слоя мастики с заходом на стены 15 см. Проверка водой через 24 ч.'},
+      {icon:'🪨',text:'Наливной пол: перепад не более 2 мм на 2 м. Проверить до укладки ламината.'},
+      {icon:'⚡',text:'Электрика — только лицензированный мастер. Схема разводки + акт выполненных работ.'},
+      {icon:'🔧',text:'Сантехника: полипропиленовые трубы, пресс-фитинги. Опрессовка системы перед закрытием.'},
+    ],
+    items:[
+      {id:'c1',name:'Грунтовка стен и потолка',sub:'260 м² · Knauf Betokontakt или Ceresit CT17',est:8000,tip:'Leroy: ведро 10л ~1 100₽, нужно 7–8 вёдер. Делайте сами — экономия ~4 000₽.'},
+      {id:'c2',name:'Шпаклёвка стен (финиш)',sub:'200 м² · Knauf Финиш или Волма Финиш',est:45000,tip:'Мешок 25 кг ≈ 600₽, нужно 15–18 мешков = 10 000₽ материал. Работа ещё 35 000₽.'},
+      {id:'c3',name:'Шлифовка стен',sub:'200 м²',est:10000,tip:'Аренда шлифмашины ~1 500₽/сут. За 2 дня управитесь сами — экономия ~8 000₽.'},
+      {id:'c4',name:'Наливной пол под ламинат',sub:'49 м² · толщина 5–10 мм',est:25000,tip:'Лучше нанять — плохая стяжка = скрип ламината.'},
+      {id:'c5',name:'Гидроизоляция с/у',sub:'8–10 м² · ванна + туалет',est:10000,tip:'Penetron или Mapei мастика. Делаете сами — материал ~3 000₽.'},
+      {id:'c6',name:'Электрика (штробы + разводка)',sub:'28–30 точек · только лицензия',est:28000,tip:'НЕ экономить. Лицензия обязательна для страховки при сдаче.'},
+      {id:'c7',name:'Сантехническая разводка',sub:'5 точек · полипропилен',est:15000,tip:'ПП-трубы дешевле металлопластика.'},
+      {id:'c8',name:'Короб для труб (ГКЛ)',sub:'2 шт · Кнауф + профиль',est:12000,tip:'Профиль 27×60 ≈ 110₽/шт. Делаете сами — материал ~2 500₽.'},
+    ]
+  },
+  {
+    id:'otd', num:'03', icon:'🖌️', title:'Чистовая отделка',
+    duration:'3–4 недели', budget_est:133500,
+    desc:`Финишный слой — всё, что будет видно. Здесь важна аккуратность стыков, ровный слой краски без потёков и равномерная укладка плитки. Работы ведутся сверху вниз: потолок → стены → пол.`,
+    reqs:[
+      {icon:'🎨',text:'Краска наносится в 2 слоя. Второй слой — после полного высыхания первого (4–6 ч).'},
+      {icon:'⬜',text:'Потолок — только белая влагостойкая краска. Допуск по цвету: не заметно на расстоянии 1 м.'},
+      {icon:'🔲',text:'Плитка: швы 2 мм, заподлицо без перепада между плитками. Проверить правилом.'},
+      {icon:'🪵',text:'Ламинат: зазор у стен 10 мм, стыки перекрыты плинтусом, порожки на каждом переходе.'},
+      {icon:'📐',text:'Угловые профили на плитке — обязательно. Открытый торец плитки недопустим.'},
+    ],
+    items:[
+      {id:'o1',name:'Краска для стен (база А)',sub:'20–25 л · Leroy: Luxens или Marshall',est:8000,tip:'Берите «База А» под колер. Мешайте сами — экономия 50% vs уже колерованная.'},
+      {id:'o2',name:'Колер (1 тон на всю квартиру)',sub:'бежево-серый / светло-серый',est:1500,tip:'Leroy колерует бесплатно. Сохраните код — понадобится при подкрашивании.'},
+      {id:'o3',name:'Краска потолок (влагостойкая)',sub:'10–12 л',est:4000,tip:'Leroy Белоснежка — 10л ≈ 1 200₽. Хватает на 49 м² в 2 слоя.'},
+      {id:'o4',name:'Плитка фартук кухня',sub:'8,5×28,5 см · 2,5 м² + запас 10%',est:7000,tip:'Леруа: серия Вива или Metro — 400–600₽/м². Запас 10% на порезку.'},
+      {id:'o5',name:'Плитка ванная (пол + стены)',sub:'30×30 см · ~12 м²',est:18000,tip:'Пол — матовая (не скользит). Стены — глянец. Один цвет на всё.'},
+      {id:'o6',name:'Клей плиточный + затирка',sub:'Ceresit CM11 · 3–4 мешка + затирка',est:5500,tip:'Мешок ≈ 500₽. Серая затирка скрывает загрязнения лучше белой.'},
+      {id:'o7',name:'Угловые профили для плитки',sub:'хром или алюминий · 8–10 шт',est:1500,tip:'Хромированные торцы смотрятся дорого. 1 шт ≈ 80–150₽.'},
+      {id:'p1',name:'Ламинат 32 класс',sub:'44 м² с запасом 10% · с фаской',est:24000,tip:'Egger, Tarkett — 350–600₽/м². Фаска важна: скрывает стыки.'},
+      {id:'p2',name:'Подложка под ламинат',sub:'2–3 мм · 50 м²',est:2500,tip:'Хвойная подложка лучше пенополиэтиленовой для шумоизоляции.'},
+      {id:'p3',name:'Плинтус ПВХ с кабель-каналом',sub:'55 мм · ~45 пог.м.',est:5500,tip:'ПВХ дешевле МДФ и не разбухает. Кабель-канал скроет провода TV.'},
+      {id:'p4',name:'Пороги между комнатами',sub:'3–4 шт · алюминий',est:2000,tip:'Алюминиевый Т-порог ≈ 200–350₽/шт.'},
+    ]
+  },
+  {
+    id:'dveri', num:'04', icon:'🚪', title:'Двери',
+    duration:'2–3 дня', budget_est:77500,
+    desc:`Двери устанавливаются после чистовой отделки стен, но до укладки ламината. Так наличники лягут без зазоров. Входная дверь — приоритет по безопасности, межкомнатные — по эстетике.`,
+    reqs:[
+      {icon:'📏',text:'Замерьте все проёмы до заказа. Стандарт 2000×700/800/900, но бывают нестандартные.'},
+      {icon:'🔧',text:'Установка коробки: проверить вертикаль и горизонталь уровнем. Перекос > 2 мм — переделать.'},
+      {icon:'🔇',text:'Входная дверь: 4 контура уплотнения — обязательно. Проверить плотность прилегания.'},
+      {icon:'🪟',text:'Наличники: зазор между наличником и стеной не допускается. Щели заделать акрилом.'},
+      {icon:'💡',text:'1 модель межкомнатных дверей на все 3 — скидка 10–15% при заказе серии.'},
+    ],
+    items:[
+      {id:'d1',name:'Входная дверь',sub:'металл · 4 контура · стандарт 2050×860',est:28000,tip:'Гардиан, Брони, Аргус — 20–35 тыс. в Екб. Установка обычно в цене.'},
+      {id:'d2',name:'Межкомнатная дверь × 1',sub:'эко-шпон · 2000×700/800',est:11000,tip:'1 модель на все 3 двери — скидка до 15%.'},
+      {id:'d3',name:'Межкомнатная дверь × 2',sub:'эко-шпон · те же размеры',est:11000,tip:'Leroy, OBI, двери-оптом.рф. Толщина полотна 38 мм.'},
+      {id:'d4',name:'Межкомнатная дверь × 3',sub:'эко-шпон · под проём',est:11000,tip:'Замерьте проёмы до заказа.'},
+      {id:'d5',name:'Коробки + наличники × 3',sub:'комплект под каждую дверь',est:12000,tip:'Доборы нужны при толщине стены > 75 мм.'},
+      {id:'d6',name:'Дверные ручки + замки × 3',sub:'хром или матовый никель',est:4500,tip:'Лучше «защёлка» без ключа. Комплект ≈ 1 000–1 500₽.'},
+    ]
+  },
+  {
+    id:'santeh', num:'05', icon:'🚿', title:'Сантехника',
+    duration:'2–3 дня', budget_est:61000,
+    desc:`Установка сантехники — после укладки плитки, до монтажа мебели. Важно: сначала устанавливается инсталляция или унитаз, потом вешается раковина, потом смесители. Полотенцесушитель — в последнюю очередь.`,
+    reqs:[
+      {icon:'💧',text:'Все гибкие подводки — нержавеющая оплётка, длина 60–80 см. Никакого белого пластика.'},
+      {icon:'🔩',text:'Унитаз: арматура Geberit или Grohe. Проверить набор/слив через 24 часа после установки.'},
+      {icon:'🌡️',text:'Полотенцесушитель: установка строго горизонтально/вертикально по уровню.'},
+      {icon:'🔧',text:'Сифоны — полипропиленовые. Сифон ванны с переливом — обязательно.'},
+      {icon:'🧺',text:'Стиральная машина: отдельная подводка и слив. Проверить герметичность при первом запуске.'},
+    ],
+    items:[
+      {id:'s1',name:'Унитаз компакт',sub:'Roca / Sanita / Cersanit · белый',est:8000,tip:'Берите с арматурой Geberit или Grohe — не потечёт.'},
+      {id:'s2',name:'Раковина подвесная',sub:'55–60 см · белая керамика',est:4000,tip:'Без тумбы выглядит просторнее — арендаторы оценят.'},
+      {id:'s3',name:'Смеситель для раковины',sub:'хром · 35 мм картридж',est:3000,tip:'Grohe Start или Hansgrohe Logis Eco.'},
+      {id:'s4',name:'Ванна акриловая 170×70',sub:'Roca / Тритон / Aquatek',est:12000,tip:'Акрил 4–5 мм достаточно. Каркас в комплекте.'},
+      {id:'s5',name:'Смеситель для ванны',sub:'хром · излив 150–160 мм',est:4500,tip:'Hansgrohe Focus ≈ 3 500₽ в Leroy.'},
+      {id:'s6',name:'Душевая лейка + шланг 1,5 м',sub:'хром · 3 режима',est:2000,tip:'Grohe Vitalio Joy 110 ≈ 1 500₽.'},
+      {id:'s7',name:'Полотенцесушитель водяной',sub:'П-образный 50×40 · хром',est:4500,tip:'Водяной дешевле в эксплуатации.'},
+      {id:'s8',name:'Сифоны + шланги + уголки',sub:'полипропилен · нержавеющая оплётка',est:5000,tip:'Не берите самые дешёвые — прорвёт через 2 года.'},
+      {id:'s9',name:'Стиральная машина',sub:'60 см · фронтальная · A++',est:18000,tip:'Haier, Beko, Indesit. На Авито почти новые от 10 тыс.'},
+      {id:'s10',name:'Вытяжка в санузел',sub:'100 мм · тихая · до 30 dB',est:3000,tip:'ERA, Vents — тихая модель важна для арендаторов.'},
+    ]
+  },
+  {
+    id:'electr', num:'06', icon:'⚡', title:'Электрика',
+    duration:'2 дня', budget_est:40000,
+    desc:`Электрика выполняется в два этапа: скрытая разводка (до отделки) и монтаж оборудования (после). Здесь работает только лицензированный электрик. По завершении — акт и схема разводки на руки.`,
+    reqs:[
+      {icon:'📋',text:'Акт выполненных работ + схема разводки с указанием глубины штроб — обязательно.'},
+      {icon:'🔌',text:'Все кабели — ВВГнг (нг = негорючий). Розетки 2,5 мм², освещение 1,5 мм².'},
+      {icon:'🎛️',text:'Одна серия розеток и выключателей на всю квартиру. Schneider Atlasdesign или Legrand Etika.'},
+      {icon:'💡',text:'Светильники — накладные LED. Надёжнее натяжного потолка для арендного жилья.'},
+      {icon:'🔒',text:'Щиток: автоматы на каждую группу. Обязателен УЗО или дифавтомат на ванную.'},
+    ],
+    items:[
+      {id:'e1',name:'Автоматический щиток',sub:'IEK / EKF · 12–16 мест',est:6000,tip:'Корпус IEK ≈ 3 000₽ + автоматы ≈ 3 000₽.'},
+      {id:'e2',name:'Кабель ВВГнг 2,5 мм² (розетки)',sub:'30–40 м',est:3500,tip:'ВВГнг — обязательно. 2,5 мм² для розеток.'},
+      {id:'e3',name:'Кабель ВВГнг 1,5 мм² (свет)',sub:'20–25 м',est:1500,tip:'Не берите мягкий ПВХ без нг маркировки.'},
+      {id:'e4',name:'Розетки 20 шт',sub:'Schneider Atlasdesign / Legrand Etika',est:10000,tip:'Одна серия на всё — выглядит профессионально.'},
+      {id:'e5',name:'Выключатели 8 шт',sub:'та же серия, что розетки',est:4000,tip:'Та же серия что розетки — обязательно.'},
+      {id:'e6',name:'Светильники накладные LED',sub:'6 зон: комнаты + коридор + с/у',est:8000,tip:'Спот-трек ≈ 800–1 500₽/шт. Надёжнее натяжного.'},
+      {id:'e7',name:'Работа электрика',sub:'только лицензия · акт выполненных работ',est:28000,tip:'Средняя цена Екб: 800–1 200₽/точка. 28–30 точек.'},
+    ]
+  },
+  {
+    id:'kuhnya', num:'07', icon:'🍳', title:'Кухня и мебель',
+    duration:'1 неделя', budget_est:158000,
+    desc:`Кухня монтируется после укладки ламината и установки дверей. Сначала — гарнитур и столешница, затем техника. Холодильник и стиральная машина подключаются в последнюю очередь после проверки всех соединений.`,
+    reqs:[
+      {icon:'📏',text:'Столешница: горизонталь строго по уровню. Отклонение > 2 мм — переделать до установки техники.'},
+      {icon:'🔌',text:'Вытяжка: воздуховод или рециркуляция. При рециркуляции — угольный фильтр в комплекте.'},
+      {icon:'🧲',text:'Фасады: зазор между дверцами ровный по всей длине. Регулировка петель после установки.'},
+      {icon:'❄️',text:'Холодильник: отступ от стены 5 см для вентиляции. Не вплотную к гарнитуру.'},
+      {icon:'🍽️',text:'Стол: раскладной предпочтительнее — экономит место в 49 м².'},
+    ],
+    items:[
+      {id:'k1',name:'Кухонный гарнитур (низ + верх)',sub:'ЛДСП · ~3 м · готовый или заказ',est:45000,tip:'Готовый в Hoff/Леруа дешевле заказного на 30–40%.'},
+      {id:'k2',name:'Столешница постформинг',sub:'3 м · 38 мм толщина',est:10000,tip:'Постформинг (пластик) прочнее ДСП, дешевле камня.'},
+      {id:'k3',name:'Индукционная панель',sub:'4 конфорки · 60 см',est:18000,tip:'Hotpoint, Bosch ≈ 13–20 тыс. Индукция безопаснее.'},
+      {id:'k4',name:'Вытяжка встраиваемая',sub:'60 см · рециркуляция',est:10000,tip:'Gorenje, Gefest ≈ 7–12 тыс. Рециркуляция — без воздуховода.'},
+      {id:'k5',name:'Холодильник отдельностоящий',sub:'180 см · двухкамерный',est:28000,tip:'Indesit, Beko ≈ 22–30 тыс. Белый ≈ 10% дешевле.'},
+      {id:'k6',name:'Мойка + смеситель',sub:'нержавейка 45–50 см + смеситель',est:7000,tip:'Врезная нержавейка + высокий излив. Leroy Franke бюджет.'},
+      {id:'k7',name:'Обеденный стол',sub:'120×80 или 90×90 · раскладной',est:8000,tip:'Раскладной сэкономит место в 49 м².'},
+      {id:'k8',name:'Стулья × 4',sub:'мягкое сиденье · металл или дерево',est:12000,tip:'IKEA-аналог в Hoff ≈ 2 500–3 500₽/шт.'},
+    ]
+  },
+  {
+    id:'mebel', num:'08', icon:'🛋️', title:'Мебель и техника',
+    duration:'3–5 дней', budget_est:117000,
+    desc:`Расстановка мебели — финальный этап. Кровать, диван и шкаф заносятся до монтажа светильников, чтобы не зацепить. Телевизор крепится на стену только после финальной уборки.`,
+    reqs:[
+      {icon:'🪟',text:'Шторы рулонные: проверить ход полотна, обрезать по ширине окна без зазоров.'},
+      {icon:'📺',text:'TV: кронштейн крепится в стену на анкеры. Проверить VESA-стандарт телевизора до покупки.'},
+      {icon:'🛏️',text:'Кровать: отступ от стены 50–60 см с обеих сторон — удобный проход.'},
+      {icon:'🪞',text:'Шкаф-купе: зеркальные двери должны ходить без заеданий. Регулировка в течение гарантийного срока.'},
+      {icon:'❄️',text:'Кондиционер: трасса до 5 м — стандартный монтаж. Более 5 м — доплата за удлинение.'},
+    ],
+    items:[
+      {id:'m1',name:'Диван угловой или раскладной',sub:'ткань · нейтральный цвет',est:38000,tip:'Hoff, Divan.ru ≈ 25–45 тыс. Механизм «еврокнижка» — надёжный.'},
+      {id:'m2',name:'Телевизор 43"',sub:'LG / Samsung / Haier · 4K',est:22000,tip:'Haier 43" ≈ 18–22 тыс. DNS часто делает акции.'},
+      {id:'m3',name:'Кронштейн для TV',sub:'наклонный · VESA 200–400',est:1500,tip:'Проверьте VESA размер TV. ≈ 500–1 500₽.'},
+      {id:'m4',name:'Кровать + каркас',sub:'140×200 или 160×200',est:15000,tip:'Askona, Hoff ≈ 10–18 тыс. Простой каркас надёжнее.'},
+      {id:'m5',name:'Матрас',sub:'160×200 · пружинный · средний',est:15000,tip:'Орматек, Аскона средней линии. Независимые пружины обязательно.'},
+      {id:'m6',name:'Прикроватные тумбы × 2',sub:'40×40 см · 1 ящик',est:8000,tip:'Hoff, IKEA-аналоги ≈ 3 000–5 000₽/шт.'},
+      {id:'m7',name:'Шкаф-купе в коридор',sub:'на заказ · зеркальные двери · ~2 м',est:35000,tip:'Зеркало в полный рост — арендаторы оценят. Местные Екб ≈ 25–40 тыс.'},
+      {id:'m8',name:'Кондиционер + установка',sub:'7 000–9 000 BTU · до 25 м²',est:43000,tip:'Midea, Hisense ≈ 25–35 тыс. + установка 5–8 тыс.'},
+    ]
+  },
+  {
+    id:'finish', num:'09', icon:'✨', title:'Финишный этап',
+    duration:'2–3 дня', budget_est:27300,
+    desc:`Последний этап перед сдачей. Текстиль, декор, интернет и финальная уборка. Квартира должна быть готова к фотосъёмке для объявления — светло, чисто, уютно. После клининга не заходить без чехлов на ботинки.`,
+    reqs:[
+      {icon:'🧹',text:'Профессиональный клининг после ремонта — обязательно. Строительная пыль оседает 2–3 дня.'},
+      {icon:'🌐',text:'Интернет подключить до заселения. Ростелеком, ЭР-Телеком, Дом.ру. Роутер — в коридоре или комнате.'},
+      {icon:'📸',text:'Фотосъёмка для объявления: зашторить окна, включить весь свет, расставить декор.'},
+      {icon:'🔥',text:'Пожарный датчик: 2 шт — у кухни и в коридоре. По закону обязателен.'},
+      {icon:'📋',text:'Составить акт приёмки с бригадой: все замечания устраняются до оплаты последнего транша.'},
+    ],
+    items:[
+      {id:'t1',name:'Шторы (рулонные или римские)',sub:'на все окна · 4–5 шт',est:8000,tip:'Рулонные Leroy ≈ 800–1 500₽/шт. Блэкаут в спальне.'},
+      {id:'t2',name:'Постельное бельё (1 комплект)',sub:'160×200 · поплин',est:4000,tip:'WildBerries ≈ 2 000–4 000₽.'},
+      {id:'t3',name:'Плед + декор-подушки',sub:'для фото объявления',est:5000,tip:'Нужны только для фото.'},
+      {id:'t4',name:'Коврики (ванная + прихожая)',sub:'50×80 + 40×60 · противоскользящие',est:3000,tip:'Резиновая основа обязательна.'},
+      {id:'t5',name:'Ваза + сухоцветы',sub:'для фото объявления',est:2000,tip:'WB ≈ 500–2 000₽ комплект.'},
+      {id:'t6',name:'Интернет (роутер + подключение)',sub:'Ростелеком / ЭР-Телеком / Дом.ру',est:2000,tip:'Роутер ≈ 1 000–2 000₽. Подключение часто бесплатно.'},
+      {id:'t7',name:'Пожарный датчик дыма × 2',sub:'батарейный · ИП 212-46М',est:1000,tip:'По закону обязателен. ≈ 200₽/шт.'},
+      {id:'t8',name:'Клининг перед сдачей',sub:'генеральная уборка 49 м²',est:5000,tip:'Профессиональный клининг Екб ≈ 3 000–6 000₽.'},
+      {id:'t9',name:'Доставка и подъём',sub:'2–3 рейса · мебель + техника',est:5000,tip:'Подъём: ~300–500₽/этаж. Уточните в Лувре — есть ли грузовой лифт.'},
+      {id:'t10',name:'Расходники и крепёж',sub:'дюбели, саморезы, клей, скотч',est:3000,tip:'Запас расходников — 3 000₽ минимум.'},
+    ]
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   BUILD UI
+   ═══════════════════════════════════════════════════════════ */
+function build(){
+  const tabs=document.getElementById('tabs');
+  const page=document.getElementById('page');
+
+  STAGES.forEach((stage,idx)=>{
+    // Tab
+    const tab=document.createElement('div');
+    tab.className='tab'+(idx===0?' on':'');
+    tab.id='tab_'+stage.id;
+    tab.innerHTML=`${stage.icon} ${stage.num}<div class="tab-done"></div>`;
+    tab.title=stage.title;
+    tab.onclick=()=>switchTab(idx);
+    tabs.appendChild(tab);
+
+    // Stage panel
+    const panel=document.createElement('div');
+    panel.className='stage'+(idx===0?' on':'');
+    panel.id='st_'+stage.id;
+
+    // Hero
+    let html=`
+      <div class="stage-hero">
+        <div class="stage-num">${stage.icon} ЭТАП ${stage.num}</div>
+        <div class="stage-title">${stage.title}</div>
+        <div class="stage-meta">
+          <div class="smeta">⏱ <b>${stage.duration}</b></div>
+          ${stage.budget_est>0?`<div class="smeta">📋 смета: <b>${stage.budget_est.toLocaleString('ru-RU')} ₽</b></div>`:''}
+        </div>
+      </div>
+      <div class="desc-card"><p>${stage.desc}</p></div>`;
+
+    // Requirements
+    if(stage.reqs.length){
+      html+=`<div class="req-block"><div class="req-title">Требования к качеству</div><div class="req-list">`;
+      stage.reqs.forEach((r,ri)=>{
+        const reqId=`req_${stage.id}_${ri}`;
+        const saved=g(reqId);
+        html+=`
+          <div class="req${saved.ra?' accepted':''}" id="${reqId}">
+            <div class="req-icon">${r.icon}</div>
+            <div class="req-txt">${r.text}</div>
+            <div class="req-accept${saved.ra?' done':''}" onclick="toggleReq('${reqId}')">${saved.ra?'Принято':'Принять'}</div>
+          </div>`;
+      });
+      html+=`</div></div>`;
+    }
+
+    // Items
+    if(stage.items.length){
+      html+=`<div class="items-block" id="items_${stage.id}"><div class="req-title">Материалы и позиции</div>`;
+      stage.items.forEach(item=>{
+        const saved=g(item.id);
+        html+=`
+          <div class="item${saved.d?' done':''}" id="it_${item.id}">
+            <div class="item-head">
+              <input type="checkbox" class="cb" id="cb_${item.id}" ${saved.d?'checked':''}>
+              <div class="itext">
+                <div class="iname">${item.name}</div>
+                <div class="isub">${item.sub}</div>
+              </div>
+            </div>
+            <div class="item-foot">
+              <div class="est-tag" id="esttag_${item.id}">~${item.est.toLocaleString('ru-RU')} ₽</div>
+              <div class="price-row" id="pr_${item.id}">
+                <input type="number" id="px_${item.id}" value="${saved.p||''}" placeholder="${item.est}" inputmode="decimal" oninput="onP('${item.id}',this.value,${item.est})">
+                <span>₽</span>
+              </div>
+              <div class="lnk-btn${saved.l?' has':''}" id="lk_${item.id}" onclick="openSheet('${item.id}')">${saved.l?'↗':'🔗'}</div>
+            </div>
+          </div>`;
+      });
+      // Subtotal + custom items container
+      const estTotal=stage.items.reduce((s,i)=>s+i.est,0);
+      html+=`
+        <div class="subtotal">
+          <div class="st-label">Итого по этапу</div>
+          <div class="st-vals">
+            <div class="st-est">смета: ${estTotal.toLocaleString('ru-RU')} ₽</div>
+            <div class="st-fact" id="sf_${stage.id}">факт: —</div>
+          </div>
+        </div>
+        <div id="custom_${stage.id}"></div>
+      </div>`;
+    } else {
+      // Stage without items — still need custom container
+      html+=`<div id="custom_${stage.id}"></div>`;
+    }
+
+    panel.innerHTML=html;
+    page.appendChild(panel);
+
+    // Attach listeners after DOM
+    setTimeout(()=>{
+      stage.items.forEach(item=>{
+        const cb=document.getElementById('cb_'+item.id);
+        if(!cb)return;
+        cb.addEventListener('change',function(){
+          const isChecked=this.checked;
+          set(item.id,'d',isChecked);
+          const el=document.getElementById('it_'+item.id);
+          if(el)el.classList.toggle('done',isChecked);
+
+          // ★ АВТОПОДСТАНОВКА СМЕТНОЙ ЦЕНЫ ★
+          if(isChecked){
+            const inp=document.getElementById('px_'+item.id);
+            const saved=g(item.id);
+            if(!saved.p||px(saved.p)===0){
+              // Автозаполняем сметой
+              const autoVal=item.est.toString();
+              inp.value=autoVal;
+              set(item.id,'p',autoVal);
+              // Подсветка и анимация
+              const pr=document.getElementById('pr_'+item.id);
+              if(pr){pr.classList.add('auto-filled');setTimeout(()=>pr.classList.remove('auto-filled'),600)}
+              onP(item.id,autoVal,item.est); // триггерим обновление est-tag
+            }
+          }
+          recalc();
+        });
+      });
+      // Рендерим кастомные элементы для этого этапа
+      renderCustomItems(stage.id);
+    },0);
+  });
+}
+
+function switchTab(idx){
+  curTab=idx;
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===idx));
+  document.querySelectorAll('.stage').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  const tab=document.getElementById('tab_'+STAGES[idx].id);
+  if(tab)tab.scrollIntoView({inline:'center',block:'nearest'});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRICE / LINK / REQ
+   ═══════════════════════════════════════════════════════════ */
+function onP(id,v,est){
+  set(id,'p',v);
+  const p=px(v);
+
+  // ★ ВИЗУАЛЬНОЕ РАЗДЕЛЕНИЕ СМЕТЫ И ФАКТА ★
+  const estTag=document.getElementById('esttag_'+id);
+  if(estTag){
+    if(p>0){
+      estTag.classList.add('overridden');
+    }else{
+      estTag.classList.remove('overridden');
+    }
+  }
+  recalc();
+}
+
+function toggleReq(reqId){
+  const saved=g(reqId);
+  const newVal=!saved.ra;
+  set(reqId,'ra',newVal);
+  const el=document.getElementById(reqId);
+  if(el){
+    el.classList.toggle('accepted',newVal);
+    const btn=el.querySelector('.req-accept');
+    if(btn){btn.className='req-accept'+(newVal?' done':'');btn.textContent=newVal?'Принято':'Принять'}
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM ITEMS
+   ═══════════════════════════════════════════════════════════ */
+function addCustomItem(){
+  const stage=STAGES[curTab];
+  const id='cust_'+Date.now();
+  customItems.push({id,stageId:stage.id,name:'',price:''});
+  sv();
+  renderCustomItems(stage.id);
+  // Прокрутить к новому элементу
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(el)el.scrollIntoView({block:'center',behavior:'smooth'});
+    // Фокус на поле ввода
+    const inp=document.getElementById('cin_'+id);
+    if(inp)inp.focus();
+  },200);
+}
+
+function renderCustomItems(stageId){
+  const container=document.getElementById('custom_'+stageId);
+  if(!container)return;
+  const items=customItems.filter(ci=>ci.stageId===stageId);
+  if(!items.length){container.innerHTML='';return}
+
+  let html='<div class="req-title" style="margin-top:12px">🛠️ Свои позиции</div>';
+  items.forEach(ci=>{
+    const p=px(ci.price);
+    html+=`
+      <div class="custom-item" id="${ci.id}">
+        <div class="ci-stage-label">добавлено вручную</div>
+        <div class="ci-row">
+          <input class="ci-name" id="cin_${ci.id}" value="${escapeHtml(ci.name)}" placeholder="Название позиции" oninput="updateCustom('${ci.id}','name',this.value)">
+          <input class="ci-price" id="cip_${ci.id}" value="${ci.price}" placeholder="0" inputmode="decimal" oninput="updateCustom('${ci.id}','price',this.value)">
+          <button class="ci-del" onclick="deleteCustom('${ci.id}')">✕</button>
+        </div>
+      </div>`;
+  });
+  container.innerHTML=html;
+}
+
+function escapeHtml(str){return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function updateCustom(id,field,value){
+  const idx=customItems.findIndex(ci=>ci.id===id);
+  if(idx===-1)return;
+  customItems[idx][field]=value;
+  sv();
+  recalc();
+}
+
+function deleteCustom(id){
+  customItems=customItems.filter(ci=>ci.id!==id);
+  sv();
+  const stage=STAGES[curTab];
+  renderCustomItems(stage.id);
+  recalc();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LINK SHEET
+   ═══════════════════════════════════════════════════════════ */
+function openSheet(id){
+  shId=id;
+  let item=null;
+  STAGES.forEach(s=>s.items.forEach(i=>{if(i.id===id)item=i}));
+  const saved=g(id);
+  document.getElementById('shN').textContent=item?.name||'—';
+  document.getElementById('shS').textContent=item?.sub||'';
+  const inp=document.getElementById('shI');
+  inp.value=saved.l||'';
+  shTyping();
+  document.getElementById('sheet').classList.add('on');
+  setTimeout(()=>inp.focus(),300);
+}
+function closeSheet(){
+  const id=shId;
+  if(id){
+    const v=document.getElementById('shI').value.trim();
+    set(id,'l',v);
+    const lk=document.getElementById('lk_'+id);
+    if(lk){lk.className='lnk-btn'+(v?' has':'');lk.textContent=v?'↗':'🔗';}
+  }
+  document.getElementById('sheet').classList.remove('on');
+  shId=null;
+}
+function shTyping(){document.getElementById('shGo').disabled=!document.getElementById('shI').value.trim()}
+function shOpen(){const v=document.getElementById('shI').value.trim();if(v)window.open(v,'_blank','noopener')}
+
+/* ═══════════════════════════════════════════════════════════
+   RECALC
+   ═══════════════════════════════════════════════════════════ */
+const BUDGET=1000000;
+const EST_TOTAL=STAGES.reduce((s,st)=>s+st.budget_est,0);
+
+function recalc(){
+  let factTotal=0,doneTotal=0,allTotal=0;
+  // Подсчёт стандартных позиций
+  STAGES.forEach(stage=>{
+    let stageFact=0,stageDone=0;
+    stage.items.forEach(item=>{
+      allTotal++;
+      const saved=g(item.id);
+      const p=px(saved.p);
+      if(p>0)stageFact+=p;
+      if(saved.d)stageDone++;
+    });
+    // Добавляем кастомные позиции этапа
+    const cis=customItems.filter(ci=>ci.stageId===stage.id);
+    cis.forEach(ci=>{
+      allTotal++;
+      const p=px(ci.price);
+      if(p>0){stageFact+=p;stageDone++} // кастомные считаем done если цена введена
+    });
+
+    factTotal+=stageFact;
+    doneTotal+=stageDone;
+
+    const sf=document.getElementById('sf_'+stage.id);
+    if(sf)sf.textContent=stageFact>0?'факт: '+fm(stageFact):'факт: —';
+
+    const tab=document.getElementById('tab_'+stage.id);
+    if(tab){
+      const allInStage=stage.items.length+cis.length;
+      const hasDone=allInStage>0&&stageDone>0;
+      tab.classList.toggle('has-done',hasDone);
+    }
+  });
+
+  const over=factTotal>BUDGET;
+  const overEst=factTotal>EST_TOTAL;
+  const pct=allTotal>0?Math.round(doneTotal/allTotal*100):0;
+  const budgetLeft=BUDGET-factTotal;
+  const estDelta=factTotal-EST_TOTAL;
+
+  // Budget bar
+  document.getElementById('bEst').textContent=fm(EST_TOTAL);
+  document.getElementById('bFact').textContent=factTotal>0?fm(factTotal):'0 ₽';
+  document.getElementById('bFact').className='bval'+(over?' red':factTotal>0?' amber':' green');
+
+  const deltaText=over
+    ? `перерасход: ${fm(Math.abs(budgetLeft))}`
+    : `остаток: ${fm(budgetLeft)}`;
+  document.getElementById('bDelta').textContent=deltaText;
+  document.getElementById('bDelta').style.color=over?'#C07060':'';
+
+  document.getElementById('bPct').textContent=pct+'% выполнено';
+  const progPct=Math.min(factTotal/BUDGET*100,100);
+  document.getElementById('bFill').style.width=progPct.toFixed(1)+'%';
+  document.getElementById('bFill').className='bprog-fill'+(over?' over':'');
+
+  // ★ БЛОК ЭКОНОМИИ / ПЕРЕРАСХОДА ★
+  const ecoBlock=document.getElementById('bEco');
+  const ecoEmoji=document.getElementById('bEcoEmoji');
+  const ecoText=document.getElementById('bEcoText');
+  if(estDelta>0){
+    // Перерасход относительно сметы
+    ecoBlock.className='beco over show';
+    ecoEmoji.textContent='⚠️';
+    ecoText.textContent=`Перерасход относительно сметы: +${fm(estDelta)} — проверьте позиции`;
+  }else if(estDelta<0&&factTotal>0){
+    // Экономия
+    ecoBlock.className='beco save show';
+    ecoEmoji.textContent='🎉';
+    ecoText.textContent=`Экономия относительно сметы: ${fm(Math.abs(estDelta))} — так держать!`;
+  }else{
+    ecoBlock.className='beco'; // hide
+  }
+}
+
+function clearAll(){
+  if(!confirm('Сбросить все цены, отметки и пользовательские позиции?'))return;
+  localStorage.removeItem(SK);st={};customItems=[];location.reload();
+}
+
+build();
+recalc();
+  </script>
+</body>
+
+</html>
